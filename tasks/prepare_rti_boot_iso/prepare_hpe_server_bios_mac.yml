@@ -1,0 +1,6 @@
+---
+
+- name: define iso path+name
+  set_fact:
+    iso_name: '{{ rti_iso_dir }}/{{ server_name|lower }}/{{ linux_distro }}-{{ linux_version }}-rti-bios.iso'
+    
