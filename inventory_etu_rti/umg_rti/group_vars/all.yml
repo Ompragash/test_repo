@@ -1,0 +1,95 @@
+---
+######################################################################
+# FILE ......: umg_rti/group_vars/all.yml
+# DESCRIPTION: global common group_vars
+# AUTHOR ....: Reiner Nippes
+# PROJECT ...: PRISMA
+#
+# (c) 2019, DB Netz AG. All Rights Reserved.
+######################################################################
+
+rti_repo_server:      'rti-repo.local.dev'
+rti_repo_server_ip:   '192.177.191.11'
+rti_repo_server_port: '8080'
+
+basis_proxy:          '192.177.140.10'
+basis_proxy_port:     '3128'
+basis_no_proxy:       '127.0.0.1,h-z1tower01.bz.han.mgmt.db.de'
+
+url_centos_repo:      'https://bahnhub.tech.rz.db.de/artifactory/centos-remote'
+
+vcenter_hostname:     '10.2.3.239'
+vcenter_datacenter:   'ETU Hannover Redesign'
+vcenter_username:     'bz\techansible'
+vcenter_password: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      37373031383736663063643731663532656637653465636565633166396337326266373262663633
+      6133353164343036613163343263386132316361373331620a666335313539653839376539663561
+      64663731333264313230333135303230393661613262323964363333616162623633613561363863
+      6231373239666435310a336639316466643135393763646233653464326136376466663737633363
+      3931
+
+timeserver:
+  - 192.177.109.5
+
+nameservers:
+  - 192.177.109.176
+  - 192.177.109.177
+  - 192.177.109.251
+  
+domain_name: idis.han.etu.db.de
+
+rti_base_dir:                       "/srv/rti"
+rti_iso_src_dir:                    "{{rti_base_dir}}/boot-iso-src"
+rti_iso_dir:                        "{{rti_base_dir}}/boot-iso"
+rti_esx_iso_datastore:              "RTI_boot_iso"
+rti_esx_iso_path:                   ""
+rti_server_ansible_public_key_path: "/etc/ansible/keys/rti_server_ansible_key.pub"
+
+repos:
+  - { name: repo-rhel, createrepo: false }
+  - { name: repo-rti, createrepo: true }
+  - { name: repo-epel, createrepo: true }
+  - { name: pip-rti, createrepo: false }
+  - { name: boot-iso, createrepo: false }
+
+apache_listen_port: '{{ rti_repo_server_port }}'
+apache_listen_ip:   '{{ rti_repo_server_ip }}'
+apache_listen_port_ssl: 8443
+apache_create_vhosts: true
+apache_remove_default_vhost: true
+apache_vhosts_filename: ssl.conf
+
+apache_vhosts:
+  - servername:       "{{ rti_repo_server }}"
+    documentroot:     "{{ rti_base_dir }}"
+    options:          "+Indexes +FollowSymLinks"
+  - servername:       "{{ rti_repo_server_ip }}"
+    documentroot:     "{{ rti_base_dir }}"
+    options:          "+Indexes +FollowSymLinks"
+    
+# hardening variables (dev-sec.xxx-hardening)
+os_ignore_users: ['ansible']
+sftp_enabled: true
+
+group_bf:
+    - name: admin
+      gid: 2000
+
+user_bf:
+    - name: reinernippes
+      uid: 2001
+      group: admin
+      groups: wheel
+      ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdXoAJ7f1yfPly25jaYL2e8rVUu7aGnhME+09lVLm/jRiOIZyEY84y+gkR91FICm2dS9EHe3iILedVGnS/hjXwn7zUzWpSlqcBoPqSABTMXTl3oDQMsquZkEUsJUtj6fQlgWVYCcgpQg0rjKGvsfaLu5wOpqrMYkaI4H+bMUBEFo0dPYNlk2hy8WX2ztUBKNWoxjWs6NEt6VXjt/7bQSzzuHbNwLO9TiDcfP/yG4tVTh+B5T1OfkMq+RU5suj37l81UK+Nnufvli4ZCJP3GlQJHg7MsdqF4QMWzvEKky+iAkvUJu9IqPG1bw2GnCob/5DDLV51VtxBbbt3HvaeshHz reiner.nippes@deutschebahn.com
+    - name: benjaminrein
+      uid: 2002
+      group: admin
+      groups: wheel
+      ssh_key: ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBOrG9u8H1M4NWNgIV716qBTFim7FTQ+hIDBszRUco4mFwiZ4CyqBoojmwbG81iROuxr51T9LTshnFCCsrAILVguFvx0v044oUwm5sXo1DvWiTNqNfFe1+TwyeI8x0/k95A== ecdsa-key-20191021-benjaminrein jump01 d-z1
+    - name: christianzigenhorn
+      uid: 2003
+      group: admin
+      groups: wheel
+      ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAiYEemBJNIr1uGzr0vSpoh3D39gHF4xczcXMhj7DDiA7h/ri/H12ml4g8HTxDlhYX0yTTVBi97hkorPiuZs9wQzPBFb3uKPzXEIwbc4N7boWzI+kbqEp0ninH23aV4+4W9xYkewCJR5aYeLlkvjpai3zrGmKwcLQetmiy3HohLE1Pz3Wj6/qxVl546ZxqjK0vbHzRGq9RHv4uLiIC0/AtFPC30Co2jDDe/T/A+jYaFZQm7GxB/8QE+ztnfCn70eSCG7zBEhY1pnm/zT3dZx14LWcTyogw48IBL9ZWQLRTRADkQjBKGOEH0vekjl6ZK7C1c6Iq964vSVddpHRyU5I6nw== christian.zigenhorn@deutschebahn.com
+

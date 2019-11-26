@@ -1,0 +1,68 @@
+---
+
+hw_type:       "vmware"
+
+linux_distro:  "RedHat"
+linux_version: "7.7"
+
+network_interfaces:
+  - name:       "eth0"
+    bond:       false
+    vlan:       false
+    bootdev:    true
+    ip:         "192.177.191.111"
+    netmask:    "255.255.255.0"
+    gateway:    "192.177.191.1"
+    macaddress: ""
+    mtu:        ""
+    ethtool:    
+
+vmware_settings:
+      folder:        "/RTI"
+      resource_pool: "RTI"
+      name:          "d-z1jump01"
+      guest_id:      "rhel7_64Guest"
+      cluster:       "Linux"
+      cdrom:
+        type:        "iso"
+        iso_path:    "[{{ rti_esx_iso_datastore }}] {{ esx_iso_path }}/{{ iso_name | basename }}"
+      disk:
+      - size_gb:     "16"
+        type:        "thin"
+        datastore:   "Linux-Windows"
+      - size_gb:     "80"
+        type:        "thin"
+        datastore:   "Linux-Windows"
+      hardware:
+        memory_mb:   "2048"
+        num_cpus:    "2"
+        scsi:        "lsilogic"
+      networks:
+      - name:        "RTI_MGMT-Server"
+        device_type: "vmxnet3"
+
+disc_config:
+  automatic_wipe_and_install: false
+  wait_before_boot_iso: 600
+  partions:
+    - { name: 'boot', mntpoint: '/boot', device: 'sda', size: '512', fs_type: 'xfs', primary: true, grow: false }
+    - { name: 'pv.0', mntpoint: 'pv.0', device: 'sda', size: '1', primary: true, grow: true }
+    - { name: 'pv.1', mntpoint: 'pv.1', device: 'sdb', size: '1', primary: true, grow: true }
+  volgroups:
+    - { log_vol: 'rhel', phys_vol: 'pv.0' }
+    - { log_vol: 'home', phys_vol: 'pv.1' }
+  log_volumes:
+    - { name: 'root', mntpoint: '/',     vgname: 'rhel', size: '4096',  fs_type: 'xfs' }
+    - { name: 'var',  mntpoint: '/var',  vgname: 'rhel' ,size: '4096',  fs_type: 'xfs' }
+    - { name: 'opt',  mntpoint: '/opt',  vgname: 'rhel', size: '1024',  fs_type: 'xfs' }
+    - { name: 'home', mntpoint: '/home', vgname: 'home', percent: '100', fs_type: 'xfs' }
+    - { name: 'swap', mntpoint: 'swap',  vgname: 'rhel', size: '1024' }
+
+rti_repo_server:      '192.177.191.11'
+rti_repo_server_ip:   '192.177.191.11'
+rti_repo_server_port: '8080'
+
+rti_server_root_passphrase: $6$ZN8bnRfvtG175KMJ$pKYlXigtCmQ4xsqEOFwj1FtBhaVsb/924BK0nDSO74oBy6kTwdkR3FMPKyOUSlWes.eHML0sfXnVwNvE0fkGs0
+
+# Allow SSH Tunnels
+ssh_permit_tunnel: true

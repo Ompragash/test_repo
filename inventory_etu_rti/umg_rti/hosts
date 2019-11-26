@@ -1,0 +1,39 @@
+---
+######################################################################
+# FILE ......: hosts
+# DESCRIPTION: ansible hosts file - rtu han
+# AUTHOR ....: Reiner Nippes
+# PROJECT ...: PRISMA
+#
+# (c) 2019, DB Netz AG. All Rights Reserved.
+######################################################################
+
+all:
+  hosts:
+    localhost:
+      ansible_host: "127.0.0.1"
+    host1:
+    repo_server:
+      ansible_host: "192.177.191.11"
+    d-z1jump01:
+      ansible_host: "192.177.191.111"
+    rti3-n-ara-01:
+      ansible_host: "192.177.191.112"
+    rti3-n-ems-01:
+      ansible_host: "192.177.191.113"
+    rti3-n-ems-02:
+      ansible_host: "192.177.191.114"
+    rti-mgmt-mon-01:
+      ansible_host: "192.177.191.115"
+      
+  children:
+    ida_servers:
+      hosts:
+        rti3-n-ara-01:
+    ib3_esb_etu:
+      hosts:
+        rti3-n-ems-01:
+        rti3-n-ems-02:
+    monitoring:
+      hosts:
+        rti-mgmt-mon-01:

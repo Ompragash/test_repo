@@ -1,0 +1,57 @@
+---
+
+hw_type:       "vmware"
+
+linux_distro:  "RedHat"
+linux_version: "7.7"
+
+network_interfaces:
+  - name:       "eth0"
+    bond:       false
+    vlan:       false
+    bootdev:    true
+    ip:         "192.177.191.115"
+    netmask:    "255.255.255.0"
+    gateway:    "192.177.191.1"
+    defaultgw:  true
+
+vmware_settings:
+      folder:        "/RTI"
+      resource_pool: "RTI"
+      name:          "rti-mgmt-mon-01"
+      guest_id:      "rhel7_64Guest"
+      cluster:       "Linux"
+      cdrom:
+        type:        "iso"
+        iso_path:    "[{{ rti_esx_iso_datastore }}] {{ esx_iso_path }}/{{ iso_name | basename }}"
+      disk:
+      - size_gb:     "16"
+        type:        "thin"
+        datastore:   "Linux-Windows"
+      - size_gb:     "20"
+        type:        "thin"
+        datastore:   "Linux-Windows"
+      hardware:
+        memory_mb:   "16384"
+        num_cpus:    "2"
+        scsi:        "lsilogic"
+      networks:
+      - name:        "RTI_MGMT-Server"
+        device_type: "vmxnet3"
+
+disc_config:
+  automatic_wipe_and_install: true
+  wait_before_boot_iso: 1
+  partions:
+    - { name: 'boot',   mntpoint: '/boot', device: 'sda', size: '512', fs_type: 'xfs', primary: true, grow: false }
+    - { name: 'pv.0',   mntpoint: 'pv.0', device: 'sda', size: '1', primary: true, grow: true }
+    - { name: 'docker', mntpoint: '/var/lib/docker', device: 'sdb', size: '1', fs_type: 'xfs', primary: true, grow: true }
+  volgroups:
+    - { log_vol: 'rhel', phys_vol: 'pv.0' }
+  log_volumes:
+    - { name: 'root', mntpoint: '/',     vgname: 'rhel', size: '4096',  fs_type: 'xfs' }
+    - { name: 'var',  mntpoint: '/var',  vgname: 'rhel' ,size: '4096',  fs_type: 'xfs' }
+    - { name: 'opt',  mntpoint: '/opt',  vgname: 'rhel', size: '1024',  fs_type: 'xfs' }
+    - { name: 'home', mntpoint: '/home', vgname: 'rhel', size: '1024', fs_type: 'xfs' }
+    - { name: 'swap', mntpoint: 'swap',  vgname: 'rhel', size: '1024' }
+

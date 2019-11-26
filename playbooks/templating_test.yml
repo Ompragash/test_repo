@@ -1,0 +1,66 @@
+#!/usr/bin/env ansible-playbook
+
+######################################################################
+# FILE ......: templating_test.yml
+# DESCRIPTION: playbook to launch rti server on vmware
+# AUTHOR ....: Reiner Nippes
+# PROJECT ...: PRISMA RTI
+#
+# USAGE      : templating_test.yml -e "server_name=d-z1-jump01" --ask-vault-pass
+# Requirement: none
+#
+# (c) 2019 DB Netz AG. All Rights Reserved.
+#######################################################################
+
+- name: get inventory vars from {{ server_name }}
+  hosts: '{{ server_name }}'
+  become: false
+  gather_facts: false
+
+  tasks:
+  - debug:
+      msg: 'Laden alle Inventory Variablen'
+    when: false
+
+
+- name: create, poweron, boot and install vmware guest {{ server_name }}
+  hosts: host1
+  become: true
+  connection: ssh
+  gather_facts: false
+
+  pre_tasks:
+  - name: get needed inventory facts of {{ server_name }}
+    set_fact:
+      vmware_settings:            "{{ hostvars[server_name].vmware_settings }}"
+      vmware_disks:               "{{ hostvars[server_name].vmware_disks | default([]) }}"
+      linux_distro:               "{{ hostvars[server_name].linux_distro }}"
+      linux_version:              "{{ hostvars[server_name].linux_version }}"
+      rti_server_root_passphrase: "{{ hostvars[server_name].rti_server_root_passphrase | default('')}}"
+      network_interfaces:         "{{ hostvars[server_name].network_interfaces }}"
+      disc_config:                "{{ hostvars[server_name].disc_config }}"
+      esx_iso_path:               "{{ rti_esx_iso_path }}/{{ server_name|lower }}"
+
+  tasks:
+  - name: define iso path+name
+    set_fact:
+      iso_name: '{{ rti_iso_dir }}/{{ server_name|lower }}/{{ linux_distro }}-{{ linux_version }}-rti-bios.iso'
+
+  - debug: var=vmware_settings.cdrom
+  - debug: var=hostvars[server_name].vmware_settings.cdrom
+  - debug: var=rti_esx_iso_datastore
+
+  - name: create iso on-the-fly
+    include_tasks:
+      file: tasks/prepare_rti_boot_iso/prepare_hpe_server_bios_mac.yml
+
+  - debug: var=vmware_settings.cdrom
+  - debug: var=hostvars[server_name].vmware_settings.cdrom
+  - debug: var=rti_esx_iso_datastore
+
+  - command: pip list
+    register: pip_list
+
+  - debug: var=pip_list
+
+
